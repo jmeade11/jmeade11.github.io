@@ -242,7 +242,7 @@
   function reset() {
     active.classed('active', false);
     active = d3.select(null);
-    svg.transition()
+    features.transition()
       .duration(1000)
       .call(zoom.transform, d3.zoomIdentity);
   }
