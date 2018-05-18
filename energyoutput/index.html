@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Scatterplot</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    header {
+      padding: 1em;
+      text-align: center;
+    }
+    a {
+      background-color: rgba(2, 129, 138, .95);
+      text-decoration: none;
+      display: inline-block;
+      padding: .15rem .25rem;
+      color: rgba(255,255,255,.95);
+    }
+    p {
+      margin: 1em auto;
+      max-width: 50rem;
+      text-align: left;
+    }
+    svg {
+      max-width: 100%;
+    }
+    label {
+      display: block;
+    }
+    .legend-item {
+      cursor: pointer;
+    }
+    .location {
+      font-weight: bold;
+      text-align: center;
+    }
+    .tooltip {
+      position: absolute;
+      z-index: 100;
+      border: 1px solid rgba(255,255,255,0);
+      padding: .5em;
+      border-radius: .25em;
+      background-color: rgba(255,255,255,.85);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Renewable Energy Output by Region</h1>
+    <h3>For 2002 / 2012</h3>
+    <p>This diagram demonstrates how to add interactivity with both click and hover behaviors demonstrated. Mouseover a circle to display its data as a tooltip and highlight it x and y positions.  Click on any category item in the legend to filter the results.  Click on the item again to unfilter the data. Updated for v5.</p>
+  </header>
+  <svg></svg>
+  <div class="tooltip">
+    <label class="location"></label>
+    <label class="yr2002"></label>
+    <label class="yr2012"></label>
+  </div>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script>
+    const data = [];
+    const margin = 80;
+    const width = 900;
+    const height = 600;
+    const svg = d3.select('svg')
+      .attr('width', width - margin)
+      .attr('height', height - margin)
+      .attr('viewBox','0 0 '+width+' '+height)
+      .attr('preserveAspectRatio','xMinYMin');
+    const tooltip = d3.select('.tooltip');
+
+    let main = svg
+      .append('g')
+      .attr('class', 'main')
+      .attr('transform', 'translate('+margin+',-'+margin+')');
+
+    let colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    let xScale = d3.scaleLinear().range([0, width]);
+    let yScale = d3.scaleLinear().range([height, 0]);
+
+    let xAxis = main
+      .append('g')
+      .classed('x-axis', true)
+      .attr('transform', 'translate(0,' + height + ')');
+
+    let yAxis = main
+      .append('g')
+      .classed('y-axis', true);
+
+    let activeLegend = '';
+
+    let xAxisLabel = main
+      .append('g')
+      .classed('x-label', true)
+      .append('text')
+      .attr('x', width/2)
+      .attr('y', 50)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 15)
+      .attr('transform', 'translate(0,' + height + ')')
+      .text('2002 Renewable Energy Output');
+
+    let yAxisLabel = main
+      .append('g')
+      .classed('y-label', true)
+      .append('text')
+      .attr('x', -height/2)
+      .attr('y', -60)
+      .attr('dy', '.71em')
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 15)
+      .attr('transform', 'rotate(-90)')
+      .text('2012 Renewable Energy Output');
+
+    function render(data) {
+      let maxX = d3.max(data, d => +d['2002']);
+      let maxY = d3.max(data, d => +d['2012']);
+
+      xScale.domain([-5, maxX + 10]);
+      yScale.domain([-5, maxY + 10]);
+
+      let circles = main.selectAll('circle').data(data);
+
+      let circlesEnter = circles
+        .enter()
+        .append('circle')
+        .on('mouseover', d => {
+          console.log(parseInt(d['2012']));
+        });
+
+      circlesEnter
+        .attr('cx', (d, i) => xScale(d['2002']))
+        .attr('cy', (d, i) => yScale(d['2012']))
+        .attr('r', 10)
+        .attr('stroke-width', 1)
+        .attr('stroke', 'rgba(230,230,230, .8)')
+        .style('fill', d => colorScale(d.Region))
+        .attr('title', d => d.Location)
+        .on('mouseover', mouseOver)
+        .on('mouseout', mouseOut);
+
+      circlesEnter.merge(circles)
+        .attr('cx', (d, i) => xScale(d['2002']))
+        .attr('cy', (d, i) => yScale(d['2012']))
+        .attr('r', 10)
+        .attr('stroke-width', 1)
+        .attr('stroke', 'rgba(230,230,230, .8)')
+        .style('fill', d => colorScale(d.Region) )
+        .attr('opacity', 0)
+        .transition()
+        .duration(500)
+        .attr('opacity', 1);
+
+      circles
+        .exit()
+        .transition()
+        .duration(500)
+        .attr('opacity', 0)
+        .remove();
+
+      xAxis
+        .transition()
+        .duration(500)
+        .call(
+          d3
+            .axisBottom(xScale)
+            .tickFormat(function(d) {
+              return d + '%';
+            })
+           .tickPadding([10])
+           .ticks(5)
+           .tickSizeOuter(0)
+        );
+
+      yAxis
+        .transition()
+        .duration(500)
+        .call(
+          d3
+            .axisLeft(yScale)
+            .tickFormat(function(d) {
+              return d + '%';
+            })
+            .tickPadding([10])
+            .ticks(5)
+            .tickSizeOuter(0)
+        );
+    }
+
+    function mouseOver(d) {
+      d3
+        .select(this)
+        .transition()
+        .duration(1000)
+        .attr('stroke-width', 20)
+        .attr('stroke', 'rgba(230,230,230, .8)')
+        .attr('r', 15);
+
+      createLineX(d);
+      createLineY(d);
+      displayTooltip(d);
+    }
+
+    function mouseOut() {
+      d3
+        .select(this)
+        .transition()
+        .duration(1000)
+        .attr('stroke-width', 1)
+        .attr('stroke', 'rgba(230,230,230, .8)')
+        .attr('r', 10);
+
+      d3
+        .selectAll('.lines')
+        .transition()
+        .duration(1000)
+        .style('opacity', 0)
+        .remove();
+
+      hideTooltip();
+    }
+
+    function createLineY(d) {
+     const lineY = main.append('line').datum(d).attr('class', 'lines')
+     lineY
+      .attr('x1', xScale(+lineY.datum()['2002'] - 2 ))
+      .attr('y1', yScale(+lineY.datum()['2012']))
+      .attr('x2', xScale(+lineY.datum()['2002']))
+      .attr('y2', yScale(+lineY.datum()['2012']))
+      .attr('stroke', d => colorScale(d['Region']))
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '10,3')
+      .attr('opacity', 0)
+      .transition()
+      .duration(750)
+      .delay(250)
+      .attr('opacity', 0.4)
+      .attr('x2', xScale(-5))
+      .attr('y2', yScale(+lineY.datum()['2012']));
+    }
+
+    function createLineX(d) {
+      var lineX = main.append('line').datum(d).attr('class', 'lines')
+      lineX
+        .attr('x1', xScale(+lineX.datum()['2002']))
+        .attr('y1', yScale(+lineX.datum()['2012'] - 2 ))
+        .attr('x2', xScale(+lineX.datum()['2002']))
+        .attr('y2', yScale(+lineX.datum()['2012']))
+        .attr('stroke-width', 2)
+        .attr('stroke', d => colorScale(d['Region']))
+        .attr('opacity', 0.4)
+        .transition()
+        .duration(750)
+        .delay(250)
+        .style('stroke-dasharray', '10,3')
+        .attr('x2', xScale(+lineX.datum()['2002']))
+        .attr('y2', yScale(-5));
+    }
+
+    function displayTooltip(d){
+      const cx = event.clientX;
+      const cy = event.clientY;
+
+      tooltip
+        .style('opacity',0)
+        .style('left', (cx + 20) + 'px')
+        .style('top', (cy + -50) + 'px')
+        .style('border-color' , colorScale(d['Region']));
+
+      tooltip.select('.location')
+        .html(d.Location);
+
+      tooltip.select('.yr2002')
+        .html(`<strong>2002:</strong> ${d['2002']}%`);
+
+      tooltip.select('.yr2012')
+        .html(`<strong>2012:</strong> ${d['2012']}%`);
+
+      tooltip.transition()
+        .duration(1000)
+        .style('opacity',1)
+    }
+
+    function hideTooltip(){
+      tooltip
+        .transition().duration(1000)
+        .style('opacity',0)
+        .on('end', function(){
+          tooltip.style('top', '-400px');
+        })
+    }
+
+    function legendData(data) {
+      legendValues = d3.set(data
+        .map(d => d.Region)
+        .filter(d => !(d == 'World'))
+      )
+      .values()
+      .sort(d3.decscending);
+      renderLegend(legendValues);
+    }
+
+    function renderLegend(legendValues) {
+      let legend = main.append('g')
+        .attr('class','legend')
+        .attr('transform', 'translate('+(width - 250)+','+(height - 250)+')');
+
+      let legendItems = legend
+        .selectAll('.legend-item')
+        .data(legendValues)
+        .enter()
+        .append('g')
+        .attr('class', 'legend-item')
+        .attr('opacity',1)
+        .attr('transform', (d, i) => {
+          return 'translate(0,' + i * 30 + ')';
+        })
+       .on('click', function(d) {
+          hideTooltip();
+          const filter = filterByRegion(d);
+          render(filter);
+        });
+
+      legendItems
+        .append('rect')
+        .attr('x', 5)
+        .attr('y', 0)
+        .attr('width', 15)
+        .attr('height', 15)
+        .style('fill', d => colorScale(d));
+
+      legendItems
+        .append('text')
+        .attr('x', 25)
+        .attr('y', 15)
+        .style('font-size', 20)
+        .text((d, i) => {
+          return d;
+    });
+
+    function filterByRegion(region) {
+      if (activeLegend == region) {
+        activeLegend = '';
+        legendTransition(region);
+        return data;
+      } else {
+        let filteredData = data.filter(d => d['Region'] == region);
+        activeLegend = region;
+        legendTransition(region);
+        return filteredData;
+      }
+    }
+
+    function legendTransition(region) {
+      let legendItems = d3.selectAll('.legend-item' );
+      legendItems
+        .transition()
+        .duration(500)
+        .attr('opacity', d => {
+          if (activeLegend == '' || d == activeLegend) {
+            return 1;
+          } else {
+            return 0.3;
+          }
+        });
+      }
+    }
+
+    d3.csv('data_regions.csv').then(d => {
+      data.push(...d);
+      render(d);
+      legendData(d);
+    });
+
+  </script>
+</body>
+</html>

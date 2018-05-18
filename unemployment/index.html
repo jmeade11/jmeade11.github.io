@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>US Unemployment Rates</title>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js" integrity="sha384-xymdQtn1n3lH2wcu0qhcdaOpQwyoarkgLVxC/wZ5q7h9gHtxICrpcaSUfygqZGOe" crossorigin="anonymous"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font: 15px sans-serif;
+      padding-bottom: 1rem;
+    }
+    header {
+      padding: 1em;
+      text-align: center;
+    }
+    a {
+      background-color: #dc3545;
+      text-decoration: none;
+      display: inline-block;
+      padding: .15rem .25rem;
+      color: white;
+    }
+    p {
+      margin: 1em auto;
+      max-width: 50rem;
+      text-align: left;
+    }
+    svg:not([data-icon]) {
+      max-width: 100%;
+      cursor: pointer;
+      position: relative;
+      top: -20px;
+    }
+    .counties {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 0.25px;
+    }
+    .states {
+      fill: none;
+      stroke: #fff;
+      stroke-linejoin: round;
+    }
+    .county {
+      cursor: pointer;
+    }
+    button {
+      color: #dc3545;
+      background-color: rgba(255,255,255,.75);
+      background-image: none;
+      outline: 0;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      vertical-align: middle;
+      user-select: none;
+      border: 1px solid #dc3545;
+      padding: .375rem .75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: .25rem;
+      transition: color .15s ease-in-out,
+        background-color .15s ease-in-out,
+        border-color .15s ease-in-out,
+        box-shadow .15s ease-in-out;
+      position: relative;
+      top: 30px;
+      z-index: 100;
+    }
+    button:active, button:hover {
+      color: #fff;
+      background-color: #dc3545;
+      border-color: #dc3545;
+    }
+    button:active {
+      box-shadow: none;
+    }
+    button:hover {
+      box-shadow: 0 0 0 0.2rem rgba(220,53,69,.5);
+      outline: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>U.S. Unemployment Rates</h1>
+    <h3>as of August, 2016</h3>
+    <h4>Based on <a href="https://bl.ocks.org/mbostock/4060606" target="_blank">M. Bostock's Choropleth Example <i class="fas fa-external-link-alt"></i></a></h4>
+    <p>Choropleth example updated for v5. Pan and zoom features have also been added to enable better inspection of the data at the county level.</p>
+  </header>
+  <button>Reset</button>
+  <svg></svg>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <script>
+  const width = 960;
+
+  const height = 600;
+
+  const svg = d3.select('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox','0 0 '+width+' '+height)
+    .attr('preserveAspectRatio','xMidYMid')
+    .on('click', stopped, true);
+
+  const features = svg.append('g');
+
+  let active = d3.select(null);
+
+  const zoom = d3.zoom()
+    .scaleExtent([1, 8])
+    .on('zoom', zoomed);
+
+  const unemployment = d3.map();
+
+  const path = d3.geoPath();
+
+  const x = d3.scaleLinear()
+    .domain([1, 10])
+    .rangeRound([600, 860]);
+
+  const color = d3.scaleThreshold()
+    .domain(d3.range(2, 10))
+    .range(d3.schemeReds[9]);
+
+  d3.json('us.json')
+    .then(d => us = d)
+    .then(function(){
+      d3.tsv('unemployment.tsv', function(d) {
+        unemployment.set(d.id, parseFloat(d.rate));
+      })
+      .then(function(){
+        buildMap(us, unemployment);
+        addLegend();
+      })
+    });
+
+  d3.select('button')
+    .on('click', reset);
+
+  function buildMap(us, unemployment) {
+    features.append('g')
+      .attr('class', 'counties')
+    .selectAll('path')
+    .data(topojson.feature(us, us.objects.counties).features)
+    .enter().append('path')
+      .attr('fill', function(d) { return color(d.rate = unemployment.get(d.id)); })
+      .attr('d', path)
+      .attr('class', 'county')
+      .on('click', zoomToBounds)
+    .append('title')
+      .text(function(d) { return d.rate + '%'; });
+
+    features.append('path')
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr('class', 'states')
+      .attr('d', path);
+  }
+
+  function addLegend() {
+    const y = height - 40;
+
+    const legend = svg.append('g')
+      .attr('class', 'key')
+      .attr('transform', 'translate(-100, '+ y +')');
+
+    legend.selectAll('rect')
+      .data(color.range().map(function(d) {
+        d = color.invertExtent(d);
+        if (d[0] == null) d[0] = x.domain()[0];
+        if (d[1] == null) d[1] = x.domain()[1];
+        return d;
+      }))
+      .enter().append('rect')
+        .attr('height', 8)
+        .attr('x', function(d) { return x(d[0]); })
+        .attr('width', function(d) { return x(d[1]) - x(d[0]); })
+        .attr('fill', function(d) { return color(d[0]); });
+
+    legend.append('text')
+      .attr('class', 'caption')
+      .attr('x', x.range()[0])
+      .attr('y', -6)
+      .attr('fill', 'crimson')
+      .attr('text-anchor', 'start')
+      .attr('font-weight', 'bold')
+      .text('Unemployment Rate');
+
+    legend.call(d3.axisBottom(x)
+      .tickSize(13)
+      .tickFormat(function(x, i) { return i ? x : x + '%'; })
+      .tickValues(color.domain()))
+      .select('.domain')
+      .remove();
+
+    legend.insert('rect', ':first-child')
+      .attr('width', 300)
+      .attr('height', 50)
+      .attr('y', -20)
+      .attr('x', 580)
+      .style('fill', 'rgba(255,255,255,.75)')
+  }
+
+  function zoomed() {
+    features.attr('transform', d3.event.transform);
+  }
+
+  function zoomToBounds(d) {
+    if (active.node() === this) return reset();
+    active.classed('active', false);
+    active = d3.select(this).classed('active', true);
+
+    var bounds = path.bounds(d),
+        dx = bounds[1][0] - bounds[0][0],
+        dy = bounds[1][1] - bounds[0][1],
+        x = (bounds[0][0] + bounds[1][0]) / 2,
+        y = (bounds[0][1] + bounds[1][1]) / 2,
+        scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / width, dy / height))),
+        translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+    features.transition()
+      .duration(750)
+      .call(zoom.transform, d3.zoomIdentity.translate(translate[0],translate[1]).scale(scale));
+  }
+
+  function stopped() {
+    if (d3.event.defaultPrevented) d3.event.stopPropagation();
+  }
+
+  function reset() {
+    active.classed('active', false);
+    active = d3.select(null);
+    svg.transition()
+      .duration(1000)
+      .call(zoom.transform, d3.zoomIdentity);
+  }
+
+  svg.call(zoom);
+  </script>
+</body>
+</html>

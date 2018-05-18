@@ -2,135 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Storing Emails in Firebase</title>
-  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3 Demos</title>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js" integrity="sha384-xymdQtn1n3lH2wcu0qhcdaOpQwyoarkgLVxC/wZ5q7h9gHtxICrpcaSUfygqZGOe" crossorigin="anonymous"></script>
+</head>
+<style>
     * {
-      margin: 0;
-      font: 30px/1 sans-serif;
       box-sizing: border-box;
+      margin: 0;
+      font-family: sans-serif;
     }
-
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       height: 100vh;
-      background-color: turquoise;
+      display: flex;
+      font: 15px sans-serif;
+      padding: 1rem;
+      justify-content: center;
+      align-items: center;
       flex-direction: column;
-      padding: 2rem;
     }
-
-    h1 {
-      font-weight: bold;
-      font-size: 4rem;
-      color: rgba(255,255,255,.85);
+    header, div {
       text-align: center;
-      line-height: 3rem;
-      margin-bottom: 1rem;
-      max-width: 25rem;
     }
-
-    span.arrow {
+    a {
+      position: relative;
+      top: -3rem;
+      text-decoration: none;
+      background-color: red;
       display: inline-block;
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: .5rem 0 .5rem .6rem;
-      border-color: transparent transparent transparent darkturquoise;
-      transform: translateY(2px);
-    }
-
-    form {
-      display:flex;
-    }
-
-    input {
-      border: none;
+      font-size: 3rem;
+      padding: 0;
+      border-radius: 50%;
+      height: 5.5rem;
+      width: 5.5rem;
+      line-height: 5rem;
+      text-align: center;
+      color: white;
       outline: none;
-      color: darkturquoise;
-      height: 1.5rem;
-      padding: .1rem .25rem;
+      border: 5px solid rgba(255,255,255,1);
+    }
+    div:hover a {
+      animation: pulse 1.5s infinite;
     }
 
-    button {
-      color: darkturquoise;
-      background-color: white;
-      border: none;
-      border-left: 1px solid turquoise;
-      padding: .1rem .25rem;
-      height: 1.5rem;
-      border-radius: 0 10px 10px 0;
-      outline: none;
+    header p {
+      margin: 1em auto;
+      max-width: 60rem;
+      text-align: left;
+    }
+    section {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 60rem;
+    }
+    .demo {
+      width: calc(100% / 3);
+      border: 1px solid gray;
+      margin-right: .5rem;
+    }
+    img {
+      max-width: 100%;
+    }
+    .text {
+      margin-top: -1.5rem;
+      padding: 0 .75rem 1rem;
+    }
+
+    @-webkit-keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0px rgba(255,0,0,.95);
+      }
+      75% {
+        box-shadow: 0 0 0 5px rgba(255,0,0,.25);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255,0,0,0);
+      }
+    }
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0px rgba(255,0,0,.95);
+      }
+      75% {
+        box-shadow: 0 0 0 5px rgba(255,0,0,.25);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255,0,0,0);
+      }
     }
   </style>
-</head>
 <body>
-
-  <h1>Give Me Your Email Address!</h1>
-  <form>
-    <input type="email" name="email" required><button><span class="arrow" aria-label="submit email address"></span></button>
-  </form>
-
-  <script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
-
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-
-  <script>
-    var config = {
-      apiKey: "AIzaSyC6RgjumOO2NZ_yh5OtxKbx6Yh06YeC_Cs",
-      authDomain: "fewd-class-project.firebaseapp.com",
-      databaseURL: "https://fewd-class-project.firebaseio.com",
-      projectId: "fewd-class-project",
-      storageBucket: "fewd-class-project.appspot.com",
-      messagingSenderId: "847250377353"
-    };
-
-    firebase.initializeApp(config);
-
-    $(document).ready(function(){
-
-      $('button').click(function(event){
-
-        event.preventDefault();
-
-        if ($('input')[0].validity.valid) {
-
-          var datetime = new Date().toString();
-
-          var registration = {
-            email: $('input').val(),
-            timestamp: datetime
-          };
-
-          firebase.database().ref('registrations').push().set(registration)
-              .then(function() {
-
-                $('h1').fadeOut('fast', function(){
-                  $(this).text('Thanks! Spam you later...😝').slideDown();
-                });
-
-                $('form').slideUp();
-
-
-              }, function(error) {
-
-                $('h1').fadeOut('fast', function(){
-                  $(this).text('Something went wrong! 💩 Try again...').slideDown();
-                });
-
-              });
-
-        } else {
-
-          $('h1').fadeOut('fast', function(){
-            $(this).text('Umm...Try an Email Address.').slideDown();
-          });
-
-        }
-
-      });
-
-    });
-  </script>
+  <header>
+    <h1>D3.js version 5 Demos</h1>
+    <p>The following are demos of the labs and codealongs we'll be working through during the training.  I'll be adding to these over the course of the coming weeks as I update the materials to reflect the version 5 changes in the D3.js library in late March this year. <strong>Click the link icon to go to the corresponding demo.</strong></p>
+  </header>
+  <section>
+    <div class="demo">
+      <img src="img/chord.png">
+      <a href="chord/index.html"><i class="fas fa-link"></i></a>
+      <div class="text">
+        <h3>Chord Demo</h3>
+        <p>An interactive chord diagram.</p>
+      </div>
+    </div>
+    <div class="demo">
+      <img src="img/scatter.png">
+      <a href="chord/index.html"><i class="fas fa-link"></i></a>
+      <div class="text">
+        <h3>Scatterplot Demo</h3>
+        <p>An interactive filterable scatterplot.</p>
+      </div>
+    </div>
+    <div class="demo">
+      <img src="img/choropleth.png">
+      <a href="chord/index.html"><i class="fas fa-link"></i></a>
+      <div class="text">
+        <h3>Choropleth Demo</h3>
+        <p>An zoom and pan choropleth.</p>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
