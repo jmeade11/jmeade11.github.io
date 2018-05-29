@@ -160,16 +160,14 @@
     function groupTicks(d, step) {
       var k = (d.endAngle - d.startAngle) / d.value;
       return d3.range(0, d.value, step)
-        .map(value => {
-          return {value: value, angle: value * k + d.startAngle}
-        });
+        .map(value => ({value: value, angle: value * k + d.startAngle}));
     }
 
     // Returns an event handler for fading a chord group
     function fade(opacity) {
       return function(d,i) {
         svg.selectAll('.ribbons path')
-          .filter(d => { return d.source.index !== i && d.target.index !== i; })
+          .filter(d => d.source.index !== i && d.target.index !== i)
         .transition()
         .style('opacity', opacity);
       };
@@ -191,7 +189,6 @@
     }
 
     function groupMouseover(d, i) {
-      console.log(d);
       ribbons.classed('fade', function(p) {
         return p.source.index != i
         && p.target.index != i;
