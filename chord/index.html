@@ -125,7 +125,7 @@
       //.attr('text-anchor', 'middle')
       .append('textPath')
       .attr('xlink:href', d => '#'+titles[d.index].toLowerCase())
-      .text(function(d) { return titles[d.index]; });
+      .text(d => titles[d.index]);
 
     const groupTick = group.selectAll('.group-tick')
       .data(d => groupTicks(d, 1e3))
