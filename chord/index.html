@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Scatterplot</title>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/all.js" integrity="sha384-xymdQtn1n3lH2wcu0qhcdaOpQwyoarkgLVxC/wZ5q7h9gHtxICrpcaSUfygqZGOe" crossorigin="anonymous"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font: 15px sans-serif;
+    }
+    header {
+      padding: 1em;
+      text-align: center;
+    }
+    a {
+      background-color: rgba(2, 129, 138, .95);
+      text-decoration: none;
+      display: inline-block;
+      padding: .15rem .25rem;
+      color: rgba(255,255,255,.95);
+    }
+    p {
+      margin: 1em auto;
+      max-width: 50rem;
+      text-align: left;
+    }
+    svg {
+      max-width: 100%;
+      cursor: pointer;
+    }
+    .group-tick line {
+      stroke: black;
+    }
+    .ribbons {
+      fill-opacity: 0.75;
+    }
+    .title {
+      font-weight: bold;
+      fill-opacity: 0.5;
+    }
+    svg:hover path.fade {
+      fill-opacity: 0.1;
+      stroke-opacity: 0.1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Interactive Chord Diagram</h1>
+    <h4>Based on the <a href="https://bl.ocks.org/mbostock/4062006" target="_blank">M. Bostock Perennial Hair Color Affinity Diagram <i class="fas fa-external-link-alt"></i></a></h4>
+    <p>This diagram has been updated for v5 and interactivity was added to provide further inspection of the relationships within the data.  Mouseover the chord group to fade all other groups.  Mouseover a chord to fade the others in the group.</p>
+  </header>
+  <svg></svg>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script>
+    const matrix = [
+      [11975,  5871, 8916, 2868],
+      [ 1951, 10048, 2060, 6171],
+      [ 8010, 16145, 8090, 8045],
+      [ 1013,   990,  940, 6907]
+    ];
+
+    const titles = ['Lavender', 'Periwinkle', 'Blue', 'Green'];
+
+    const width = 600;
+    const height = 600;
+    const svg = d3.select('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('viewBox','0 0 '+width+' '+height)
+      .attr('preserveAspectRatio','xMidYMid');
+
+    const outerRadius = Math.min(width, height) * 0.5 - 40;
+    const innerRadius = outerRadius - 30;
+
+    const formatValue = d3.formatPrefix(',.0', 1e3);
+
+    const chord = d3.chord()
+      .padAngle(0.05)
+      .sortSubgroups(d3.descending);
+
+    const arc = d3.arc()
+      .innerRadius(innerRadius)
+      .outerRadius(outerRadius);
+
+    const ribbon = d3.ribbon()
+      .radius(innerRadius);
+
+    const color = d3.scaleOrdinal()
+      .domain(d3.range(4))
+      .range(d3.schemePuBuGn[4]);
+
+    const g = svg.append('g')
+      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+      .datum(chord(matrix));
+
+    const group = g.append('g')
+      .attr('class', 'groups')
+      .selectAll('g')
+      .data(chords => chords.groups)
+      .enter().append('g')
+      .on('mouseover', groupMouseover);
+
+    group.append('path')
+      .style('fill', d => color(d.index))
+      .style('stroke', d => d3.rgb(color(d.index)).darker())
+      .attr('id', d => titles[d.index].toLowerCase())
+      .attr('d', arc);
+
+    group.append('text')
+      .attr('x', 10) //-> needs to be calc'd from len of arc to center
+      .attr('dy', 20)
+      .attr('class', 'title')
+      //.attr('text-anchor', 'middle')
+      .append('textPath')
+      .attr('xlink:href', d => '#'+titles[d.index].toLowerCase())
+      .text(d => titles[d.index]);
+
+    const groupTick = group.selectAll('.group-tick')
+      .data(d => groupTicks(d, 1e3))
+      .enter().append('g')
+      .attr('class', 'group-tick')
+      .attr('transform', d => 'rotate(' + (d.angle * 180 / Math.PI - 90) + ') translate(' + outerRadius + ',0)');
+
+    groupTick.append('line')
+      .attr('x2', 6);
+
+    groupTick
+      .filter(d => d.value % 5e3 === 0)
+      .append('text')
+        .attr('x', 8)
+        .attr('dy', '.35em')
+        .attr('transform', d => d.angle > Math.PI ? 'rotate(180) translate(-16)' : null)
+        .style('text-anchor', d => d.angle > Math.PI ? 'end' : null)
+        .text(d => formatValue(d.value));
+
+    const ribbons = g.append('g')
+      .attr('class', 'ribbons')
+      .selectAll('path')
+      .data(chords => chords)
+      .enter().append('path')
+      .attr('d', ribbon)
+      .style('fill', d => color(d.target.index))
+      .style('stroke', d=> d3.rgb(color(d.target.index)).darker())
+      .on('mouseover', ribbonMouseover)
+      .on('mouseout', ribbonMouseout);
+
+    // Returns tick angles and values array for a group and step
+    function groupTicks(d, step) {
+      var k = (d.endAngle - d.startAngle) / d.value;
+      return d3.range(0, d.value, step)
+        .map(value => ({value: value, angle: value * k + d.startAngle}));
+    }
+
+    // Returns an event handler for fading a chord group
+    function fade(opacity) {
+      return function(d,i) {
+        svg.selectAll('.ribbons path')
+          .filter(d => d.source.index !== i && d.target.index !== i)
+        .transition()
+        .style('opacity', opacity);
+      };
+    }
+
+    function ribbonMouseover(d,i) {
+      svg.selectAll('.ribbons path')
+        .transition()
+        .style('opacity', 0.1);
+      d3.select(this)
+        .transition()
+        .style('opacity', 1);
+    }
+
+    function ribbonMouseout(d) {
+      svg.selectAll('.ribbons path')
+        .transition()
+        .style('opacity', 1);
+    }
+
+    function groupMouseover(d, i) {
+      ribbons.classed('fade', function(p) {
+        return p.source.index != i
+        && p.target.index != i;
+      });
+    }
+  </script>
+</body>
+</html>

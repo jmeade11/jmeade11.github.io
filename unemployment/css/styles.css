@@ -1,0 +1,102 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  font-family: sans-serif;
+}
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font: 15px sans-serif;
+  padding-bottom: 1rem;
+}
+header {
+  padding: 1em;
+  text-align: center;
+}
+a {
+  background-color: #dc3545;
+  text-decoration: none;
+  display: inline-block;
+  padding: .15rem .25rem;
+  color: white;
+}
+p {
+  margin: .75em auto .5;
+  max-width: 50rem;
+  text-align: left;
+}
+.container {
+  position: relative;
+}
+.container div {
+  opacity: 0;
+  transition: opacity .5s ease-in-out;
+}
+.container div.popover {
+  position: absolute;
+  top: 25%;
+  left: calc(50% - 6rem);
+  height: 6rem;
+  width: 12rem;
+  background-color: rgba(255,255,255,.9);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: 5px 5px 5px rgba(0,0,0,.25);
+  opacity: 1;
+}
+.popover::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -1rem;
+  border-width: 1rem;
+  border-style: solid;
+  border-color: rgba(255,255,255,.9) transparent transparent transparent;
+}
+.popover h4 {
+  color: #555;
+}
+.popover h2 {
+  margin-top: .45rem;
+  color: #000;
+}
+.active {
+  fill: #aaa;
+}
+svg:not([data-icon]) {
+  max-width: 100%;
+  cursor: pointer;
+}
+.counties {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 0.25px;
+}
+.states {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+}
+.county {
+  cursor: pointer;
+}
+.legend-bg {
+  fill: rgba(255,255,255,.75);
+}
+.tick text {
+  font-size: 12px;
+}
+
+
+@media (max-width: 768px) {
+  .key {
+    transform: scale(3) translate(25px,250px);
+  }
+}
