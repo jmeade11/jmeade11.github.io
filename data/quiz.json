@@ -1,0 +1,99 @@
+{
+  "title": "Intro to jQuery Quiz",
+  "questions": [
+    {
+      "question": "Which will add a click event listener to every element with a class of <code class=\"css\">choice</code>?",
+      "question-type": "text",
+      "answer-type": "multiple-choice",
+      "format": "code",
+      "choices": [
+        "$('#choice').on('click', function(){\n  /* add code here */  \n});",
+        "$('.choice').on('click', function(){\n  /* add code here */  \n});",
+        "$('.choice').on('click', function{\n  /* add code here */  \n}();",
+        "$('.choice').on('click', function(\n  /* add code here */  \n);"
+      ],
+      "answer": 1,
+      "explanation": "The event handler is the invoked when an event that is being <em>listened for</em> is observed."
+    },
+    {
+      "question": "Where should you load the jQuery library in a web project?",
+      "question-type": "text",
+      "answer-type": "multiple-choice",
+      "format": "text",
+      "choices": [
+        "On the line after the main JavaScript file that uses jQuery.",
+        "Before any JavaScript files that use jQuery; all of which should be placed immediately prior the closing <code>&lt;/body></code> tag.",
+        "Inside of the main Javascript file that uses the jQuery library.",
+        "In the head of the HTML document, and before any JavaScript files that use jQuery methods."
+      ],
+      "answer": 1,
+      "explanation": "Loading jQuery just before the closing body tag ensures that the HTML/CSS are loaded first, giving the impression of a faster overall load-time for your users."
+    },
+    {
+      "question": "Which choice correctly targets all elements with a class of <code class=\"css\">medium</code>?",
+      "question-type": "text",
+      "answer-type": "multiple-choice",
+      "format": "code",
+      "choices": [
+        "$('.medium')",
+        "$('#medium')",
+        "$(#medium)",
+        "$(.medium)"
+      ],
+      "answer": 0,
+      "explanation": "To target a class, we have to precede the class name with a [.] dot exactly as we do in CSS.  Our selectors are always passed as strings &mdash; meaning they must be surrounded by single or double quotes."
+    },
+    {
+      "question": "Which of the following will hide the element with an id of <code class=\"css\">secret</code>?",
+      "question-type": "text",
+      "answer-type": "multiple-choice",
+      "format": "code",
+      "choices": [
+        "$('.secret').hide();",
+        "$('#secret').hide();",
+        "$('.hide').secret();",
+        "$('#hide').secret();"
+      ],
+      "answer": 1,
+      "explanation": "To target an id, its name is prefixed with a [#] hash symbol.  The <code class=\"js\">hide()</code> method is one of several jQuery methods that can be used to hide an element."
+    },
+    {
+      "question": "What is an event handler?",
+      "question-type": "text",
+      "answer-type": "multiple-choice",
+      "format": "text",
+      "choices": [
+        "A jQuery method that changes the appearance of an HTML element.",
+        "Event handlers, like <code class=\"js\">.hide()</code>, trigger a callback function when a user changes something about an existing element.",
+        "A callback function that executes when an event condition is met.",
+        "A method that executes a callback function when an event occurs."
+      ],
+      "answer": 3,
+      "explanation": "The event handler is the invoked when an event that is being <em>listened for</em> is observed."
+    }
+  ],
+  "correct-replies": [
+    "You got it!",
+    "You rock!",
+    "Way to go!",
+    "Yep, that's the one.",
+    "Huzzah!",
+    "You're like a coding ninja.",
+    "Nailed it!",
+    "w00t! w00t!",
+    "Wicked pissah!",
+    "Awesome sauce..."
+  ],
+  "incorrect-replies": [
+    "Doh!",
+    "You'll get it next time...",
+    "Hmmmmm, that's not quite right.",
+    "Not so much...",
+    "Almost, but alas, no.",
+    "Errrr...ummmm...no.",
+    "It's more like this...",
+    "This one was hard.",
+    "Let's see if we can clear things up...",
+    "Good try..."
+  ]
+}

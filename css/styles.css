@@ -1,0 +1,121 @@
+:root {
+  --info-50: rgba(23, 162, 184, .5);
+  --danger-50: rgba(220, 53, 69, .5);
+  --success-50: rgba(40, 167, 69, .5);
+  --warning-50: rgba(255, 193, 7, .5);
+}
+
+a {
+  outline: none;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  font-size: 1.25em;
+}
+
+code {
+  background-color: rgba(255, 255, 170, .25);
+  padding: .5rem;
+}
+
+h1, h2, h3 {
+  letter-spacing: -1px;
+  font-weight: 600;
+}
+
+h1 > *,
+h2 > *,
+h3 > * {
+  letter-spacing: normal;
+  font-weight: normal;
+}
+
+ol {
+  text-align: left;
+}
+
+pre {
+  margin: 0;
+  font-size: 100%;
+  background: #3f3f3f;
+}
+
+pre > code.hljs {
+  display: inline-block;
+  text-align: left;
+}
+
+strong {
+  font-weight: 900;
+}
+
+.hljs {
+  padding: .75rem;
+}
+
+.btn.disabled,
+.btn:disabled {
+  opacity: .25;
+}
+
+.choice {
+  cursor: pointer;
+  user-select: none;
+  margin: .5rem 0;
+  border: 3px solid transparent;
+  transition: border .5s ease-in-out;
+}
+
+.choice:hover {
+  border-color: var(--warning-50);
+}
+
+.choice.selected {
+  border-color: var(--yellow);
+  outline: 1px solid var(--warning-50);
+  animation: pulse .7s infinite alternate ease-in-out;
+}
+
+.choice.correct {
+  border-color: var(--success);
+  outline: 1px solid var(--success-50);
+  animation: pulse .7s infinite alternate ease-in-out;
+}
+
+.choice.incorrect {
+  border-color: var(--danger);
+}
+
+.result {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.container.narrow {
+  max-width: 768px;
+}
+
+#explanation h3 {
+  font-family: 'Caveat';
+  font-size: 2em;
+}
+
+@keyframes pulse {
+    from {
+      outline-width: 1px;
+      outline-color: white;
+    }
+    to {
+      outline-width: 8px;
+    }
+}
+
+@media (min-width: 768px) {
+
+  #explanation h3 {
+    font-size: 3em;
+  }
+
+}
